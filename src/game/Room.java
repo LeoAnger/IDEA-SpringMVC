@@ -12,10 +12,11 @@ public class Room {
     public static Map<String, String> roomAdminPWMap = new HashMap<>();
     public static Map<String, String> roomPlayerPWMap = new HashMap<>();
 
-    // 房间密码唯一ID
+    // 房间临时代理密码唯一ID
     /*
         http://www.米游.com/?room_num=977927&pw=123
         room_num --> room_id --> pw匹配
+        3ERWhE5W88 --> 9595
      */
     public static Map<String, String> roomIdMapTemp = new HashMap<>();
 
@@ -24,5 +25,7 @@ public class Room {
     public static Set<String> roomAdminSet = new HashSet<>();
     // 房间玩家信息 --> 作用：查询玩家是否在线
     public static Set<String> roomPlayerSet = new HashSet<>();
+
+
 
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import task.RandString;
 
+import javax.crypto.spec.PSource;
 import java.util.Random;
 
 @Controller
@@ -26,7 +27,7 @@ public class RoomControl {
 //        if (room_id.equals("99")) return null;
 //        if (room_id.equals("88")) return "";
         if (Room.roomSet.contains(room_id)){
-            //?????rand
+            //获取随机数rand
             String rand = "";
             System.out.println("uesedNum:" + RandString.uesedNum);
             while (RandString.uesedNum < 2040) {
@@ -34,18 +35,20 @@ public class RoomControl {
                 RandString.uesedNum ++;
                 break;
             }
-            // ??????roomID
+            // 对应roomID
             Room.roomIdMapTemp.put(rand, room_id);
-            //http://www.??.com/?RoomIdTemp=977927&pw=123  -->
+            //http://www.??.com/?RoomIdTemp=3ERWhE5W88&pw=123  -->
             return "RoomIdTemp:" + rand;
         }
         return null;
     }
 
     /*
-        room2:?????http??
-        ??????
+        room2:房间密码及身份权限认定
+        密码：管理员密码    --> 房主
+        密码：玩家密码      --> 玩家
         http://www.??.com/?RoomIdTemp=977927&pw=123
+        根据RoomIdTemp找到房间号，再验证密码
      */
     @RequestMapping("/room2")
     @ResponseBody
@@ -54,11 +57,27 @@ public class RoomControl {
         if (Room.roomIdMapTemp.containsKey(RoomIdTemp)){
             // ????????
             String roomId = Room.roomIdMapTemp.get(RoomIdTemp);
-            //1.????????
-            if (Room.roomAdminSet.contains(roomId)) {
-                // ?????
+            System.out.println("roomAdminSet:" + Room.roomAdminSet.size());
+            //2.身份判断（玩家）
+            if (Room.roomPlayerSet.size() > 10) {
+                // 房间人满不反回值
             } else {
-                // ??????
+                // ?????
+                // a.??????
+                String player = Room.roomPlayerPWMap.get(roomId);
+                if (player == null) return "";
+                if (player.equals(pw)) {
+                    return "{Player,Player2}";
+
+                }
+                // RoomIdTemp失效
+                Room.roomIdMapTemp.remove(RoomIdTemp);
+            }
+            //1.身份判断（管理员）
+            if (Room.roomAdminSet.size() > 0) {
+                // 管理员已经存在
+            } else {
+                // 管理员不存在
                 // a.???????
                 String admin = Room.roomAdminPWMap.get(roomId);
                 if (admin == null) return "";
@@ -66,21 +85,7 @@ public class RoomControl {
                     return "{Admin,Player1}";
                 }
             }
-            //2.???????
-            if (Room.roomPlayerSet.contains(roomId)) {
-                // ????
-            } else {
-                // ?????
-                // a.??????
-                String player = Room.roomAdminPWMap.get(roomId);
-                if (player == null) return "";
-                if (player.equals(pw)) {
-                    return "{Player,Player2}";
-                } else {
-                    // ????
-                    Room.roomIdMapTemp.remove(RoomIdTemp);
-                }
-            }
+
         }
         return null;
     }
@@ -101,7 +106,7 @@ public class RoomControl {
         return "true";
     }
 
-    // ????
+    // 创建房间
     @RequestMapping("/add/room/r")
     @ResponseBody
     public String addRoomId(String room_id, String AdminPW, String PlayerPW) {
